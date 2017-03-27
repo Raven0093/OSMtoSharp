@@ -11,7 +11,7 @@ namespace TestApp
     {
         static void Main(string[] args)
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 1; i++)
             {
                 DateTime data = DateTime.Now;
 
@@ -19,8 +19,14 @@ namespace TestApp
                 //OsmData osmData = OsmParser.GetDataFromOSM(OsmIOManager.LoadOsmDocument(18.67758, 50.28279, 18.69443, 50.28892));
 
                 //London
-                OsmData osmData = OsmParser.GetDataFromOSM(OsmIOManager.LoadOsmDocument(-0.1353, 51.5019, -0.1016, 51.5132));
+                //OsmData osmData = OsmParser.GetDataFromOSM(OsmIOManager.LoadOsmDocument(-0.1353, 51.5019, -0.1016, 51.5132));
 
+                //float minLong = 18.5484f;
+                //float minLat = 50.2426f;
+                //float maxLong = 18.8179f;
+                //float maxLat = 50.3354f;
+
+                OsmData osmData = OsmParser.GetDataFromOSM(OsmIOManager.LoadOsmDocument(18.5484, 50.2426f, 18.8179f, 50.3354f));
 
                 int a = osmData.Ways.Where(x => x.Nodes.Count != x.Nds.Count).Count();
                 int b = osmData.Relations.Where(x => x.Members.Where(y => y.Value != null).Count() > 0).Count();

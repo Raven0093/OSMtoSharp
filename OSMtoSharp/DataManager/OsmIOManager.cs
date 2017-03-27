@@ -229,9 +229,14 @@ namespace OSMtoSharp
                             i++;
                             if (i > Constants.maxTryDownloadDocument)
                             {
-                                break;
-                            }
 
+                                lock (jobsLock)
+                                {
+                                    jobs--;
+                                    return;
+                                }
+                            }
+                            Thread.Sleep(200);
                         }
                     }
 
@@ -254,8 +259,7 @@ namespace OSMtoSharp
 
             if (!File.Exists(fileName) && ((maxLong - minLong) > Constants.latLonDivisionShift || (maxLat - minLat) > Constants.latLonDivisionShift))
             {
-                CreateBigFile(minLong, minLat, maxLong, maxLat, Constants.latLonDivisionShift);
-                return LoadFile(minLong, minLat, maxLong, maxLat);
+                return CreateBigFile(minLong, minLat, maxLong, maxLat, Constants.latLonDivisionShift);
             }
             else
             {
