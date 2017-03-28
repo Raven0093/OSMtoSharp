@@ -13,7 +13,9 @@ namespace OSMtoSharp
         public const string osmRelation = "relation";
         public const double latLonDivisionShift = 0.015;
         public const double latLonBoundsShift = 0.0000001;
-        public const int maxTryDownloadDocument = 15;
+        public const int maxTryDownloadDocument = 60;
         public const string DownloadFolder = "Download";
+        public const int waitDowloadMilisec = 1000;
+
     }
 }

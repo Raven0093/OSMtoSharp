@@ -10,12 +10,6 @@ namespace OSMtoSharp
 {
     public class OsmIOManager
     {
-        private static long jobs;
-
-        private static object jobsLock;
-
-        private static List<XmlDocument> XmlDocuments;
-
         private static string GenerateFileUrl(double minLong, double minLat, double maxLong, double maxLat)
         {
             return string.Format("http://api.openstreetmap.org/api/0.6/map?bbox={0},{1},{2},{3}",
@@ -147,71 +141,119 @@ namespace OSMtoSharp
                 Url = GenerateFileUrl(newMinLong, newMinLat, newMaxLong, newMaxLat)
             });
 
+#if VERBOSE
+            Console.WriteLine($"BigFile split to {files.Count} files");
+#endif
+
             return files;
         }
 
         private static XmlDocument CreateBigFile(double minLong, double minLat, double maxLong, double maxLat, double lonLatShift)
         {
-            XmlDocuments = new List<XmlDocument>();
-            jobsLock = new object();
-            jobs = 0;
+            Dictionary<string, bool> nodesDictionary = new Dictionary<string, bool>();
+            Dictionary<string, bool> waysDictionary = new Dictionary<string, bool>();
+            Dictionary<string, bool> relationsDictionary = new Dictionary<string, bool>();
+
             List<FileData> files = GenerateFileDataList(minLong, minLat, maxLong, maxLat, lonLatShift);
 
-            foreach (var file in files)
+            ThreadPoolManager threadPoolManager = new ThreadPoolManager(ThreadPoolCallback);
+            threadPoolManager.Invoke(files);
+
+            XmlDocument XmlResultDocument = new XmlDocument();
+            XmlDocument XmlCurrentDocuments;
+            if (File.Exists(files[0].Name))
             {
-                lock (jobsLock)
-                {
-                    jobs++;
-                }
-                ThreadPool.QueueUserWorkItem(ThreadPoolCallback, file);
+                XmlResultDocument.Load(files[0].Name);
+            }
+            else
+            {
+                throw new Exception("Pusta lista!!!!@@@@###@@!!");
             }
 
-            while (jobs > 0)
+            XmlNode osmMainRoot = XmlResultDocument.SelectNodes($"{Constants.osmRoot}")[0];
+            XmlNodeList osmRootNodeNodes = XmlResultDocument.SelectNodes($"{Constants.osmRoot}/{Constants.osmNode}");
+            XmlNodeList osmRootWayNodes = XmlResultDocument.SelectNodes($"{Constants.osmRoot}/{Constants.osmWay}");
+            XmlNodeList osmRootRelationNodes = XmlResultDocument.SelectNodes($"{Constants.osmRoot}/{Constants.osmRelation}");
+
+            foreach (XmlNode osmRootNodeNode in osmRootNodeNodes)
             {
-                Thread.Sleep(200);
+                nodesDictionary[osmRootNodeNode.Attributes["id"].Value] = true;
+            }
+            foreach (XmlNode osmRootWayNode in osmRootWayNodes)
+            {
+                nodesDictionary[osmRootWayNode.Attributes["id"].Value] = true;
+            }
+            foreach (XmlNode osmRootRelationNode in osmRootRelationNodes)
+            {
+                nodesDictionary[osmRootRelationNode.Attributes["id"].Value] = true;
             }
 
-            if (XmlDocuments.Count > 1)
-            {
-                XmlNode osmMainRoot = XmlDocuments[0].SelectNodes($"{Constants.osmRoot}")[0];
-                for (int i = 1; i < XmlDocuments.Count; i++)
-                {
 
-                    XmlNodeList osmNodeNodes = XmlDocuments[i].SelectNodes($"{Constants.osmRoot}/{Constants.osmNode}");
-                    XmlNodeList osmWayNodes = XmlDocuments[i].SelectNodes($"{Constants.osmRoot}/{Constants.osmWay}");
-                    XmlNodeList osmRelationNodes = XmlDocuments[i].SelectNodes($"{Constants.osmRoot}/{Constants.osmRelation}");
-                    XmlNodeList[] lists = new XmlNodeList[] { osmNodeNodes, osmWayNodes, osmRelationNodes };
-                    foreach (XmlNodeList list in lists)
+            for (int i = 1; i < files.Count; i++)
+            {
+
+                if (File.Exists(files[i].Name))
+                {
+                    XmlCurrentDocuments = new XmlDocument();
+                    XmlCurrentDocuments.Load(files[i].Name);
+
+                    XmlNodeList osmNodeNodes = XmlCurrentDocuments.SelectNodes($"{Constants.osmRoot}/{Constants.osmNode}");
+                    XmlNodeList osmWayNodes = XmlCurrentDocuments.SelectNodes($"{Constants.osmRoot}/{Constants.osmWay}");
+                    XmlNodeList osmRelationNodes = XmlCurrentDocuments.SelectNodes($"{Constants.osmRoot}/{Constants.osmRelation}");
+
+                    foreach (XmlNode osmNodeNode in osmNodeNodes)
                     {
-                        foreach (XmlNode node in list)
+                        string id = osmNodeNode.Attributes["id"].Value;
+                        if (!nodesDictionary.ContainsKey(id))
                         {
-                            osmMainRoot.AppendChild(osmMainRoot.OwnerDocument.ImportNode(node, true));
+                            nodesDictionary[id] = true;
+                            osmMainRoot.AppendChild(osmMainRoot.OwnerDocument.ImportNode(osmNodeNode, true));
+                        }
+                    }
+
+                    foreach (XmlNode osmWayNode in osmWayNodes)
+                    {
+                        string id = osmWayNode.Attributes["id"].Value;
+                        if (!nodesDictionary.ContainsKey(id))
+                        {
+                            nodesDictionary[id] = true;
+                            osmMainRoot.AppendChild(osmMainRoot.OwnerDocument.ImportNode(osmWayNode, true));
+                        }
+                    }
+
+                    foreach (XmlNode osmRelationNode in osmRelationNodes)
+                    {
+                        string id = osmRelationNode.Attributes["id"].Value;
+                        if (!nodesDictionary.ContainsKey(id))
+                        {
+                            nodesDictionary[id] = true;
+                            osmMainRoot.AppendChild(osmMainRoot.OwnerDocument.ImportNode(osmRelationNode, true));
                         }
                     }
                 }
-
-                XmlNode osmBoundsNodes = XmlDocuments[0].SelectNodes($"{Constants.osmRoot}/{Constants.osmBounds}")[0];
-                osmBoundsNodes.Attributes["minlon"].Value = minLong.ToString("0.0000000", System.Globalization.CultureInfo.InvariantCulture);
-                osmBoundsNodes.Attributes["minlat"].Value = minLat.ToString("0.0000000", System.Globalization.CultureInfo.InvariantCulture);
-                osmBoundsNodes.Attributes["maxlon"].Value = maxLong.ToString("0.0000000", System.Globalization.CultureInfo.InvariantCulture);
-                osmBoundsNodes.Attributes["maxlat"].Value = maxLat.ToString("0.0000000", System.Globalization.CultureInfo.InvariantCulture);
             }
 
-            XmlDocuments[0].Save(GenerateFileName(minLong, minLat, maxLong, maxLat));
+            XmlNode osmBoundsNodes = XmlResultDocument.SelectNodes($"{Constants.osmRoot}/{Constants.osmBounds}")[0];
+            osmBoundsNodes.Attributes["minlon"].Value = minLong.ToString("0.0000000", System.Globalization.CultureInfo.InvariantCulture);
+            osmBoundsNodes.Attributes["minlat"].Value = minLat.ToString("0.0000000", System.Globalization.CultureInfo.InvariantCulture);
+            osmBoundsNodes.Attributes["maxlon"].Value = maxLong.ToString("0.0000000", System.Globalization.CultureInfo.InvariantCulture);
+            osmBoundsNodes.Attributes["maxlat"].Value = maxLat.ToString("0.0000000", System.Globalization.CultureInfo.InvariantCulture);
 
-            return XmlDocuments[0];
+            XmlResultDocument.Save(GenerateFileName(minLong, minLat, maxLong, maxLat));
+
+            return XmlResultDocument;
         }
 
         private static void ThreadPoolCallback(object threadContext)
         {
 
-            FileData file = threadContext as FileData;
-            if (file != null)
+            IEnumerable<FileData> files = threadContext as IEnumerable<FileData>;
+            if (!Directory.Exists(Constants.DownloadFolder))
             {
-                if (!Directory.Exists(Constants.DownloadFolder))
-                {
-                    Directory.CreateDirectory(Constants.DownloadFolder);
-                }
+                Directory.CreateDirectory(Constants.DownloadFolder);
+            }
+            foreach (var file in files)
+            {
                 if (!File.Exists(file.Name))
                 {
                     WebClient Client = new WebClient();
@@ -229,27 +271,15 @@ namespace OSMtoSharp
                             i++;
                             if (i > Constants.maxTryDownloadDocument)
                             {
-
-                                lock (jobsLock)
-                                {
-                                    jobs--;
-                                    return;
-                                }
+                                return;
                             }
-                            Thread.Sleep(200);
+                            Thread.Sleep(Constants.waitDowloadMilisec);
+#if VERBOSE
+                            Console.WriteLine($"{file.Name} - retry #{i}");
+#endif
                         }
                     }
-
                 }
-            }
-
-            XmlDocument document = new XmlDocument();
-            document.Load(file.Name);
-
-            lock (jobsLock)
-            {
-                XmlDocuments.Add(document);
-                jobs--;
             }
         }
 

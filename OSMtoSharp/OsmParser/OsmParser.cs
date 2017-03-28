@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -24,13 +25,14 @@ namespace OSMtoSharp
 
             XmlNodeList osmNodes = document.SelectNodes($"{Constants.osmRoot}/{Constants.osmNode}");
 
+
             foreach (XmlNode osmNode in osmNodes)
             {
                 OsmNode newOsmNode = new OsmNode(osmNode.Attributes, osmData);
                 newOsmNode.FillChildren(osmNode.ChildNodes);
-                osmData.Nodes.Add(newOsmNode);
-            }
+                osmData.Nodes.Add(newOsmNode.Id, newOsmNode);
 
+            }
 
             XmlNodeList osmWays = document.SelectNodes($"{Constants.osmRoot}/{Constants.osmWay}");
 
@@ -38,7 +40,7 @@ namespace OSMtoSharp
             {
                 OsmWay newOsmWay = new OsmWay(osmWay.Attributes, osmData);
                 newOsmWay.FillChildren(osmWay.ChildNodes);
-                osmData.Ways.Add(newOsmWay);
+                osmData.Ways.Add(newOsmWay.Id, newOsmWay);
             }
 
             XmlNodeList osmRelations = document.SelectNodes($"{Constants.osmRoot}/{Constants.osmRelation}");
@@ -47,17 +49,11 @@ namespace OSMtoSharp
             {
                 OsmRelation newOsmRelation = new OsmRelation(osmRelation.Attributes, osmData);
                 newOsmRelation.FillChildren(osmRelation.ChildNodes);
-                osmData.Relations.Add(newOsmRelation);
-            }
-
-
-            while (osmData.jobs > 0)
-            {
-                Thread.Sleep(200);
+                osmData.Relations.Add(newOsmRelation.Id, newOsmRelation);
             }
 
             return osmData;
-
         }
+
     }
 }

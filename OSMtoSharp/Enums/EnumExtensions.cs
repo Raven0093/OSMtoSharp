@@ -61,6 +61,31 @@ namespace OSMtoSharp
 
             return (T)Enum.ToObject(typeof(T), 0);
         }
+
+        public static string GetEnumAttributeValue<T>(T obj)
+        {
+            if (obj == null)
+            {
+                return string.Empty;
+            }
+            var field = obj.GetType().GetField(obj.ToString(), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            if (field != null)
+            {
+                var attrs = field.GetCustomAttributes(typeof(EnumAttribute), false);
+                if (attrs != null && attrs.Length > 0)
+                {
+                    var attr = attrs[0] as EnumAttribute;
+                    if (attr != null)
+                    {
+                        return attr.Key;
+                    }
+                }
+            }
+
+            return obj.ToString();
+
+
+        }
     }
 
     [System.AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
@@ -76,4 +101,5 @@ namespace OSMtoSharp
         public string Key { get; set; }
     }
 }
+
 

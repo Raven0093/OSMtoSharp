@@ -44,10 +44,5 @@ namespace OSMtoSharp
 
             }
         }
-
-        public override void ThreadPoolCallback(object threadContext)
-        {
-
-        }
     }
 }

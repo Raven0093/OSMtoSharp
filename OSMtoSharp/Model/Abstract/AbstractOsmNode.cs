@@ -35,6 +35,5 @@ namespace OSMtoSharp
         }
 
         public abstract void FillChildren(XmlNodeList childNodes);
-        public abstract void ThreadPoolCallback(Object threadContext);
     }
 }

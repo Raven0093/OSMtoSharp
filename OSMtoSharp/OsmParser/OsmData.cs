@@ -8,17 +8,14 @@ namespace OSMtoSharp
     {
         public OsmData()
         {
-            Nodes = new List<OsmNode>();
-            Ways = new List<OsmWay>();
-            Relations = new List<OsmRelation>();
-            jobsLock = new object();
+            Nodes = new Dictionary<long, OsmNode>();
+            Ways = new Dictionary<long, OsmWay>();
+            Relations = new Dictionary<long, OsmRelation>();
         }
 
         public OsmBounds bounds;
-        public List<OsmNode> Nodes;
-        public List<OsmWay> Ways;
-        public List<OsmRelation> Relations;
-        public long jobs;
-        public object jobsLock;
+        public Dictionary<long, OsmNode> Nodes;
+        public Dictionary<long, OsmWay> Ways;
+        public Dictionary<long, OsmRelation> Relations;
     }
 }

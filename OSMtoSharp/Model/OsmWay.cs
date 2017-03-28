@@ -42,32 +42,16 @@ namespace OSMtoSharp
                     //TODO
                 }
             }
-           
-            ThreadPool.QueueUserWorkItem(ThreadPoolCallback);
         }
 
-        public override void ThreadPoolCallback(object threadContext)
+        public void FillNodes()
         {
-            lock (parent.jobsLock)
-            {
-                parent.jobs++;
-            }
-
-
             foreach (var nd in Nds)
             {
-                foreach (var item in parent.Nodes)
+                if (parent.Nodes.ContainsKey(nd.Ref))
                 {
-                    if (item.Id == nd.Ref)
-                    {
-                        Nodes.Add(item as OsmNode);
-                        break;
-                    }
+                    Nodes.Add(parent.Nodes[nd.Ref]);
                 }
-            }
-            lock (parent.jobsLock)
-            {
-                parent.jobs--;
             }
         }
     }

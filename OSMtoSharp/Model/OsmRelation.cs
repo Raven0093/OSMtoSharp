@@ -51,45 +51,28 @@ namespace OSMtoSharp
                     //TODO
                 }
             }
-            ThreadPool.QueueUserWorkItem(ThreadPoolCallback);
         }
-
-        public override void ThreadPoolCallback(object threadContext)
+        public void FillMembers()
         {
-            lock (parent.jobsLock)
-            {
-                parent.jobs++;
-            }
-
             foreach (var member in Members)
             {
                 if (member.Type == RelationMemberTypeEnum.Node)
                 {
-                    foreach (var item in parent.Nodes)
+                    if (parent.Nodes.ContainsKey(member.Ref))
                     {
-                        if (item.Id == member.Ref)
-                        {
-                            member.Value = item as OsmNode;
-                            break;
-                        }
+                        member.Value = parent.Nodes[member.Ref];
                     }
                 }
                 else if (member.Type == RelationMemberTypeEnum.Way)
                 {
-                    foreach (var item in parent.Ways)
+
+                    if (parent.Ways.ContainsKey(member.Ref))
                     {
-                        if (item.Id == member.Ref)
-                        {
-                            member.Value = item as OsmWay;
-                            break;
-                        }
+                        member.Value = parent.Ways[member.Ref];
                     }
+
                 }
 
-            }
-            lock (parent.jobsLock)
-            {
-                parent.jobs--;
             }
         }
     }
