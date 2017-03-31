@@ -20,5 +20,7 @@ namespace OSMtoSharp
         Name,
         [Enum("proposed")]
         Proposed,
+        [Enum("building")]
+        Building,
     }
 }

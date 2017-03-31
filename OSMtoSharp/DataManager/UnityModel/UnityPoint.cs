@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OSMtoSharp
 {
-    public struct UnityPoint
+    public struct UnityPoint : IUnityModel
     {
         public float Lat { get; set; }
         public float Lon { get; set; }

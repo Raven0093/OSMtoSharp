@@ -4,7 +4,7 @@ using System.Text;
 
 namespace OSMtoSharp
 {
-    public class UnityWay
+    public class UnityWay : IUnityModel
     {
         public string Name { get; set; }
         public HighwayTypeEnum HighwayType { get; set; }

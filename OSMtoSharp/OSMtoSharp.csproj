@@ -36,6 +36,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataManager\UnityModel\UnityBuilding.cs" />
+    <Compile Include="DataManager\UnityModel\UnityModel.cs" />
     <Compile Include="DataManager\UnityModel\UnityPoint.cs" />
     <Compile Include="OsmParser\Constants\Constants.cs" />
     <Compile Include="OsmParser\Enums\EnumCache.cs" />

@@ -11,19 +11,21 @@ namespace OSMtoSharp
         private OsmData OsmData { get; set; }
 
 
-        private List<UnityWay> resultList;
+        private List<IUnityModel> resultList;
         private object lockResultList;
         private HighwayTypeEnum[] types;
 
         public OsmDataManager(OsmData osmData)
         {
-            resultList = new List<UnityWay>();
+            resultList = new List<IUnityModel>();
             OsmData = osmData;
             lockResultList = new object();
         }
 
-        public IEnumerable<UnityWay> GetHighways(params HighwayTypeEnum[] types)
+        public IEnumerable<IUnityModel> GetHighways(params HighwayTypeEnum[] types)
         {
+            resultList = new List<IUnityModel>();
+
             if (OsmData == null)
             {
                 return resultList;
@@ -74,7 +76,7 @@ namespace OSMtoSharp
                 }
             }
 
-            ThreadPoolManager threadPoolManager = new ThreadPoolManager(HighwayFillWaysNodeThreadPoolCallback);
+            ThreadPoolManager threadPoolManager = new ThreadPoolManager(FillWaysNodeThreadPoolCallback);
             threadPoolManager.Invoke(osmHighwaysFulfilledParams);
 
 
@@ -84,7 +86,36 @@ namespace OSMtoSharp
             return resultList;
         }
 
-        private void HighwayFillWaysNodeThreadPoolCallback(object threadContext)
+        public IEnumerable<IUnityModel> GetBuilding()
+        {
+            resultList = new List<IUnityModel>();
+
+            if (OsmData == null)
+            {
+                return resultList;
+            }
+
+            List<OsmWay> osmBuilding = new List<OsmWay>();
+
+            foreach (var way in OsmData.Ways)
+            {
+                if (way.Value.Tags.ContainsKey(TagKeyEnum.Building))
+                {
+                    osmBuilding.Add(way.Value);
+                }
+            }
+
+            ThreadPoolManager threadPoolManager = new ThreadPoolManager(FillWaysNodeThreadPoolCallback);
+            threadPoolManager.Invoke(osmBuilding);
+
+
+            threadPoolManager = new ThreadPoolManager(BuildingsFillResultsThreadPoolCallback);
+            threadPoolManager.Invoke(osmBuilding);
+
+            return resultList;
+        }
+
+        private void FillWaysNodeThreadPoolCallback(object threadContext)
         {
             IEnumerable<OsmWay> osmWays = threadContext as IEnumerable<OsmWay>;
             foreach (OsmWay osmWay in osmWays)
@@ -120,6 +151,31 @@ namespace OSMtoSharp
                         }
 
                     }
+                }
+            }
+        }
+
+
+        private void BuildingsFillResultsThreadPoolCallback(object threadContext)
+        {
+            IEnumerable<OsmWay> osmWays = threadContext as IEnumerable<OsmWay>;
+
+            foreach (var osmWay in osmWays)
+            {
+                if (osmWay.Nodes.Count > 0)
+                {
+
+                    UnityBuilding newUnityway = new UnityBuilding(osmWay);
+                    if (newUnityway != null)
+                    {
+                        lock (lockResultList)
+                        {
+                            resultList.Add(newUnityway);
+                        }
+                    }
+
+
+
                 }
             }
         }
