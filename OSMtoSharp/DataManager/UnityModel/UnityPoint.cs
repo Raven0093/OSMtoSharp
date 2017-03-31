@@ -4,8 +4,9 @@ using System.Text;
 
 namespace OSMtoSharp
 {
-    public class OsmNd
+    public struct UnityPoint
     {
-        public long Ref { get; set; }
+        public float Lat { get; set; }
+        public float Lon { get; set; }
     }
 }

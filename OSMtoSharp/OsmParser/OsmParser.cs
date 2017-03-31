@@ -13,44 +13,276 @@ namespace OSMtoSharp
 
     public class OsmParser
     {
-        public static OsmData GetDataFromOSM(XmlDocument document)
+        public static OsmData GetDataFromOSM(string fileName, double minLon, double minLat, double maxLon, double maxLat)
         {
             OsmData osmData = new OsmData();
+            AbstractOsmNode.parent = osmData;
 
-            XmlNodeList osmBoundsNodes = document.SelectNodes($"{Constants.osmRoot}/{Constants.osmBounds}");
-            if (osmBoundsNodes.Count > 0)
+            OsmNode currentNode = null;
+            OsmWay currentWay = null;
+            OsmRelation currentRelation = null;
+            bool currentIsNode = false;
+            bool currentIsWay = false;
+            bool currentIsRelation = false;
+
+            if (!Directory.Exists(Constants.FileFolder))
             {
-                osmData.bounds = new OsmBounds(osmBoundsNodes[0].Attributes);
+                Directory.CreateDirectory(Constants.FileFolder);
+            }
+            if (!File.Exists($"{Constants.FileFolder}{Path.DirectorySeparatorChar}{fileName}"))
+            {
+                return osmData;
             }
 
-            XmlNodeList osmNodes = document.SelectNodes($"{Constants.osmRoot}/{Constants.osmNode}");
-
-
-            foreach (XmlNode osmNode in osmNodes)
+            using (XmlReader reader = XmlReader.Create($"{Constants.FileFolder}{Path.DirectorySeparatorChar}{fileName}"))
             {
-                OsmNode newOsmNode = new OsmNode(osmNode.Attributes, osmData);
-                newOsmNode.FillChildren(osmNode.ChildNodes);
-                osmData.Nodes.Add(newOsmNode.Id, newOsmNode);
+                while (reader.Read())
+                {
+                    if (reader.IsStartElement())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            if (reader.Name == Constants.osmNode)
+                            {
+                                try
+                                {
+                                    double lat = double.Parse(reader.GetAttribute("lat"), System.Globalization.CultureInfo.InvariantCulture);
+                                    double lon = double.Parse(reader.GetAttribute("lon"), System.Globalization.CultureInfo.InvariantCulture);
 
+                                    if (osmData.bounds.MinLat <= lat && osmData.bounds.MaxLat >= lat && osmData.bounds.MinLon <= lon && osmData.bounds.MaxLon >= lon)
+                                    {
+                                        OsmNode newOsmNode = new OsmNode()
+                                        {
+                                            Id = long.Parse(reader.GetAttribute("id")),
+                                            Lat = double.Parse(reader.GetAttribute("lat"), System.Globalization.CultureInfo.InvariantCulture),
+                                            Lon = double.Parse(reader.GetAttribute("lon"), System.Globalization.CultureInfo.InvariantCulture),
+                                        };
+
+                                        osmData.Nodes.Add(newOsmNode.Id, newOsmNode);
+                                        currentNode = newOsmNode;
+                                        currentIsNode = true;
+                                        currentIsWay = false;
+                                        currentIsRelation = false;
+                                    }
+                                    else
+                                    {
+                                        currentIsNode = false;
+                                        currentIsWay = false;
+                                        currentIsRelation = false;
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+#if VERBOSE
+                                   // Console.WriteLine(ex.Message);
+#endif
+                                }
+                            }
+
+                            else if (reader.Name == Constants.osmWay)
+                            {
+                                try
+                                {
+                                    OsmWay newOsmWay = new OsmWay()
+                                    {
+                                        Id = long.Parse(reader.GetAttribute("id")),
+                                    };
+
+                                    osmData.Ways.Add(newOsmWay.Id, newOsmWay);
+                                    currentWay = newOsmWay;
+                                    currentIsNode = false;
+                                    currentIsWay = true;
+                                    currentIsRelation = false;
+                                }
+                                catch (Exception ex)
+                                {
+#if VERBOSE
+                                    //Console.WriteLine(ex.Message);
+#endif
+                                }
+                            }
+
+                            else if (reader.Name == Constants.osmRelation)
+                            {
+                                try
+                                {
+                                    OsmRelation newOsmRelation = new OsmRelation()
+                                    {
+                                        Id = long.Parse(reader.GetAttribute("id"))
+                                    };
+
+                                    osmData.Relations.Add(newOsmRelation.Id, newOsmRelation);
+                                    currentRelation = newOsmRelation;
+                                    currentIsNode = false;
+                                    currentIsWay = false;
+                                    currentIsRelation = true;
+                                }
+                                catch (Exception ex)
+                                {
+#if VERBOSE
+                                    //Console.WriteLine(ex.Message);
+#endif
+                                }
+                            }
+
+                            else if (reader.Name == Constants.osmTag)
+                            {
+                                try
+                                {
+                                    string key = reader.GetAttribute("k");
+                                    string value = reader.GetAttribute("v");
+                                    TagKeyEnum tagKey = EnumExtensions.GetTagKeyEnum<TagKeyEnum>(key);
+
+                                    if (tagKey != TagKeyEnum.None)
+                                    {
+                                        if (currentIsNode && currentNode != null)
+                                        {
+                                            currentNode.Tags[tagKey] = value;
+                                        }
+                                        else if (currentIsWay && currentWay != null)
+                                        {
+                                            currentWay.Tags[tagKey] = value;
+                                        }
+                                        else if (currentIsRelation && currentRelation != null)
+                                        {
+                                            currentRelation.Tags[tagKey] = value;
+                                        }
+
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+#if VERBOSE
+                                   // Console.WriteLine(ex.Message);
+#endif
+                                }
+                            }
+
+                            else if (reader.Name == Constants.osmNd)
+                            {
+                                try
+                                {
+                                    long refId = long.Parse(reader.GetAttribute("ref"));
+
+                                    if (currentWay != null && currentIsWay)
+                                    {
+                                        currentWay.Nds.Add(refId);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+#if VERBOSE
+                                   // Console.WriteLine(ex.Message);
+#endif
+                                }
+
+                            }
+
+                            else if (reader.Name == Constants.osmMember)
+                            {
+                                try
+                                {
+                                    string role = reader.GetAttribute("role");
+                                    RelationMemberRoleEnum roleEnum = EnumExtensions.GetTagKeyEnum<RelationMemberRoleEnum>(role);
+
+                                    string type = reader.GetAttribute("type");
+                                    RelationMemberTypeEnum typeEnum = EnumExtensions.GetTagKeyEnum<RelationMemberTypeEnum>(type);
+
+                                    if (currentIsRelation && currentRelation != null)
+                                    {
+                                        currentRelation.Members.Add(new OsmMember()
+                                        {
+                                            Ref = long.Parse(reader.GetAttribute("ref")),
+                                            Role = roleEnum,
+                                            Type = typeEnum
+                                        });
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+#if VERBOSE
+                                    //Console.WriteLine(ex.Message);
+#endif
+                                }
+
+                            }
+
+                            else if (reader.Name == Constants.osmBounds)
+                            {
+                                double fileMinLat;
+                                double fileMinLon;
+                                double fileMaxLat;
+                                double fileMaxLon;
+
+                                try
+                                {
+                                    fileMinLat = double.Parse(reader.GetAttribute("minlat"), System.Globalization.CultureInfo.InvariantCulture);
+                                    fileMinLon = double.Parse(reader.GetAttribute("minlon"), System.Globalization.CultureInfo.InvariantCulture);
+                                    fileMaxLat = double.Parse(reader.GetAttribute("maxlat"), System.Globalization.CultureInfo.InvariantCulture);
+                                    fileMaxLon = double.Parse(reader.GetAttribute("maxlon"), System.Globalization.CultureInfo.InvariantCulture);
+                                }
+                                catch (Exception)
+                                {
+                                    throw new Exception("FIle bad bounds");
+                                }
+
+
+                                osmData.bounds = new OsmBounds();
+
+
+                                if (fileMaxLat <= minLat && fileMaxLon <= minLon && fileMinLat >= maxLat && fileMinLon >= maxLon)
+                                {
+                                    break;
+                                }
+
+                                if (fileMinLat >= minLat)
+                                {
+                                    osmData.bounds.MinLat = fileMinLat;
+                                }
+                                else
+                                {
+                                    osmData.bounds.MinLat = minLat;
+                                }
+
+                                if (fileMinLon >= minLon)
+                                {
+                                    osmData.bounds.MinLon = fileMinLon;
+                                }
+                                else
+                                {
+                                    osmData.bounds.MinLon = minLon;
+                                }
+
+                                if (fileMaxLat >= maxLat)
+                                {
+                                    osmData.bounds.MaxLat = maxLat;
+                                }
+                                else
+                                {
+                                    osmData.bounds.MaxLat = fileMaxLat;
+                                }
+
+                                if (fileMaxLon >= maxLon)
+                                {
+                                    osmData.bounds.MaxLon = maxLon;
+                                }
+                                else
+                                {
+                                    osmData.bounds.MaxLon = fileMaxLon;
+                                }
+
+                            }
+                        }
+
+
+
+                    }
+
+                }
             }
 
-            XmlNodeList osmWays = document.SelectNodes($"{Constants.osmRoot}/{Constants.osmWay}");
 
-            foreach (XmlNode osmWay in osmWays)
-            {
-                OsmWay newOsmWay = new OsmWay(osmWay.Attributes, osmData);
-                newOsmWay.FillChildren(osmWay.ChildNodes);
-                osmData.Ways.Add(newOsmWay.Id, newOsmWay);
-            }
-
-            XmlNodeList osmRelations = document.SelectNodes($"{Constants.osmRoot}/{Constants.osmRelation}");
-
-            foreach (XmlNode osmRelation in osmRelations)
-            {
-                OsmRelation newOsmRelation = new OsmRelation(osmRelation.Attributes, osmData);
-                newOsmRelation.FillChildren(osmRelation.ChildNodes);
-                osmData.Relations.Add(newOsmRelation.Id, newOsmRelation);
-            }
 
             return osmData;
         }

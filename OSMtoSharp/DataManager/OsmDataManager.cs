@@ -2,31 +2,37 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml;
 
 namespace OSMtoSharp
 {
     public class OsmDataManager
     {
-        private OsmData osmData { get; set; }
+        private OsmData OsmData { get; set; }
 
 
         private List<UnityWay> resultList;
         private object lockResultList;
         private HighwayTypeEnum[] types;
 
-        public OsmDataManager(double minLong, double minLat, double maxLong, double maxLat)
+        public OsmDataManager(OsmData osmData)
         {
             resultList = new List<UnityWay>();
-            osmData = OsmParser.GetDataFromOSM(OsmIOManager.LoadOsmDocument(minLong, minLat, maxLong, maxLat));
+            OsmData = osmData;
             lockResultList = new object();
         }
 
         public IEnumerable<UnityWay> GetHighways(params HighwayTypeEnum[] types)
         {
+            if (OsmData == null)
+            {
+                return resultList;
+            }
+
             this.types = types;
             List<OsmWay> osmHighways = new List<OsmWay>();
 
-            foreach (var way in osmData.Ways)
+            foreach (var way in OsmData.Ways)
             {
                 if (way.Value.Tags.ContainsKey(TagKeyEnum.Highway))
                 {
@@ -78,13 +84,12 @@ namespace OSMtoSharp
             return resultList;
         }
 
-
         private void HighwayFillWaysNodeThreadPoolCallback(object threadContext)
         {
             IEnumerable<OsmWay> osmWays = threadContext as IEnumerable<OsmWay>;
-            foreach (OsmWay unityWay in osmWays)
+            foreach (OsmWay osmWay in osmWays)
             {
-                unityWay.FillNodes();
+                osmWay.FillNodes();
             }
         }
 
@@ -92,30 +97,32 @@ namespace OSMtoSharp
         {
             IEnumerable<OsmWay> osmWays = threadContext as IEnumerable<OsmWay>;
 
-            foreach (var osmHighwaysFulfilledParam in osmWays)
+            foreach (var osmWay in osmWays)
             {
-                HighwayTypeEnum highwayType = EnumExtensions.GetTagKeyEnum<HighwayTypeEnum>(osmHighwaysFulfilledParam.Tags[TagKeyEnum.Highway]);
-
-                foreach (var type in types)
+                if (osmWay.Nodes.Count > 0)
                 {
-                    if (highwayType == type)
+                    HighwayTypeEnum highwayType = EnumExtensions.GetTagKeyEnum<HighwayTypeEnum>(osmWay.Tags[TagKeyEnum.Highway]);
+
+                    foreach (var type in types)
                     {
-                        UnityWay newUnityway = new UnityWay(osmHighwaysFulfilledParam, type);
-                        if (newUnityway != null)
+                        if (highwayType == type)
                         {
-                            lock (lockResultList)
+                            UnityWay newUnityway = new UnityWay(osmWay, type);
+                            if (newUnityway != null)
                             {
-                                resultList.Add(newUnityway);
+                                lock (lockResultList)
+                                {
+                                    resultList.Add(newUnityway);
+                                }
                             }
+
+                            break;
                         }
 
-                        break;
                     }
-
                 }
             }
         }
-
 
     }
 }
