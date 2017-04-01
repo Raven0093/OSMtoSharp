@@ -4,12 +4,12 @@ using System.Text;
 
 namespace OSMtoSharp
 {
-    public class UnityWay : IUnityModel
+    public class UnityHighway : IUnityModel
     {
         public string Name { get; set; }
         public HighwayTypeEnum HighwayType { get; set; }
         public List<UnityPoint> HighwayPoints { get; set; }
-        public UnityWay(OsmWay osmWay, HighwayTypeEnum type)
+        public UnityHighway(OsmWay osmWay, HighwayTypeEnum type)
         {
             HighwayType = type;
             Name = "<no name>";

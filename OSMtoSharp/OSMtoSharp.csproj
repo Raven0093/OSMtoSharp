@@ -36,9 +36,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataManager\UnityEnums\BuildingsTypeEnum.cs" />
+    <Compile Include="DataManager\UnityEnums\RailwayTypeEnum.cs" />
     <Compile Include="DataManager\UnityModel\UnityBuilding.cs" />
     <Compile Include="DataManager\UnityModel\UnityModel.cs" />
     <Compile Include="DataManager\UnityModel\UnityPoint.cs" />
+    <Compile Include="DataManager\UnityModel\UnityRailway.cs" />
     <Compile Include="OsmParser\Constants\Constants.cs" />
     <Compile Include="OsmParser\Enums\EnumCache.cs" />
     <Compile Include="OsmParser\Model\Abstract\AbstractOsmNode.cs" />
@@ -58,7 +61,7 @@
     <Compile Include="OsmParser\Enums\TagKeyEnum.cs" />
     <Compile Include="ThreadPoolManager\ThreadPoolManager.cs" />
     <Compile Include="DataManager\UnityEnums\HighwayTypeEnum.cs" />
-    <Compile Include="DataManager\UnityModel\UnityWay.cs" />
+    <Compile Include="DataManager\UnityModel\UnityHighway.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="OsmParser\Exceptions\" />
