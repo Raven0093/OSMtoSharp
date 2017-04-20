@@ -7,6 +7,8 @@
         [Enum("way")]
         Way,
         [Enum("node")]
-        Node
+        Node,
+        [Enum("relation")]
+        Relation
     }
 }

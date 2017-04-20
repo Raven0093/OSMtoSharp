@@ -24,6 +24,18 @@ namespace OSMtoSharp
             lockResultList = new object();
         }
 
+        public void FillWaysNode()
+        {
+            FillWaysNode(OsmData.WaysList);
+        }
+
+        private void FillWaysNode(List<OsmWay> osmHighwaysFulfilled)
+        {
+            ThreadPoolManager threadPoolManager = new ThreadPoolManager(FillWaysNodeThreadPoolCallback);
+            threadPoolManager.Invoke(osmHighwaysFulfilled);
+        }
+
+
         public IEnumerable<IUnityModel> GetHighways(params HighwayTypeEnum[] types)
         {
             if (preparingDataStarted)
@@ -86,11 +98,12 @@ namespace OSMtoSharp
                 }
             }
 
-            ThreadPoolManager threadPoolManager = new ThreadPoolManager(FillWaysNodeThreadPoolCallback);
-            threadPoolManager.Invoke(osmHighwaysFulfilledParams);
+            //ThreadPoolManager threadPoolManager = new ThreadPoolManager(FillWaysNodeThreadPoolCallback);
+            //threadPoolManager.Invoke(osmHighwaysFulfilledParams);
+            FillWaysNode(osmHighwaysFulfilledParams);
 
 
-            threadPoolManager = new ThreadPoolManager(HighwayFillResultsThreadPoolCallback);
+            ThreadPoolManager threadPoolManager = new ThreadPoolManager(HighwayFillResultsThreadPoolCallback);
             threadPoolManager.Invoke(osmHighwaysFulfilledParams);
 
             preparingDataStarted = false;

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -25,16 +26,22 @@ namespace OSMtoSharp
             bool currentIsWay = false;
             bool currentIsRelation = false;
 
-            if (!Directory.Exists(Constants.FileFolder))
+            //if (!Directory.Exists(Constants.FileFolder))
+            //{
+            //    Directory.CreateDirectory(Constants.FileFolder);
+            //}
+            //if (!File.Exists($"{Constants.FileFolder}{Path.DirectorySeparatorChar}{fileName}"))
+            //{
+            //    return osmData;
+            //}
+
+            if (!File.Exists(fileName))
             {
-                Directory.CreateDirectory(Constants.FileFolder);
-            }
-            if (!File.Exists($"{Constants.FileFolder}{Path.DirectorySeparatorChar}{fileName}"))
-            {
-                return osmData;
+                throw new FileNotFoundException();
             }
 
-            using (XmlReader reader = XmlReader.Create($"{Constants.FileFolder}{Path.DirectorySeparatorChar}{fileName}"))
+            //using (XmlReader reader = XmlReader.Create($"{Constants.FileFolder}{Path.DirectorySeparatorChar}{fileName}"))
+            using (XmlReader reader = XmlReader.Create(fileName))
             {
                 while (reader.Read())
                 {
@@ -46,16 +53,16 @@ namespace OSMtoSharp
                             {
                                 try
                                 {
-                                    double lat = double.Parse(reader.GetAttribute("lat"), System.Globalization.CultureInfo.InvariantCulture);
-                                    double lon = double.Parse(reader.GetAttribute("lon"), System.Globalization.CultureInfo.InvariantCulture);
+                                    double lat = double.Parse(reader.GetAttribute(Constants.LatString), System.Globalization.CultureInfo.InvariantCulture);
+                                    double lon = double.Parse(reader.GetAttribute(Constants.LonString), System.Globalization.CultureInfo.InvariantCulture);
 
                                     if (osmData.bounds.MinLat <= lat && osmData.bounds.MaxLat >= lat && osmData.bounds.MinLon <= lon && osmData.bounds.MaxLon >= lon)
                                     {
                                         OsmNode newOsmNode = new OsmNode()
                                         {
-                                            Id = long.Parse(reader.GetAttribute("id")),
-                                            Lat = double.Parse(reader.GetAttribute("lat"), System.Globalization.CultureInfo.InvariantCulture),
-                                            Lon = double.Parse(reader.GetAttribute("lon"), System.Globalization.CultureInfo.InvariantCulture),
+                                            Id = long.Parse(reader.GetAttribute(Constants.IdString)),
+                                            Lat = double.Parse(reader.GetAttribute(Constants.LatString), System.Globalization.CultureInfo.InvariantCulture),
+                                            Lon = double.Parse(reader.GetAttribute(Constants.LonString), System.Globalization.CultureInfo.InvariantCulture),
                                         };
 
                                         osmData.Nodes.Add(newOsmNode.Id, newOsmNode);
@@ -75,7 +82,7 @@ namespace OSMtoSharp
                                 catch (Exception ex)
                                 {
 #if VERBOSE
-                                   // Console.WriteLine(ex.Message);
+                                    // Console.WriteLine(ex.Message);
 #endif
                                 }
                             }
@@ -86,7 +93,7 @@ namespace OSMtoSharp
                                 {
                                     OsmWay newOsmWay = new OsmWay()
                                     {
-                                        Id = long.Parse(reader.GetAttribute("id")),
+                                        Id = long.Parse(reader.GetAttribute(Constants.IdString)),
                                     };
 
                                     osmData.Ways.Add(newOsmWay.Id, newOsmWay);
@@ -109,7 +116,7 @@ namespace OSMtoSharp
                                 {
                                     OsmRelation newOsmRelation = new OsmRelation()
                                     {
-                                        Id = long.Parse(reader.GetAttribute("id"))
+                                        Id = long.Parse(reader.GetAttribute(Constants.IdString))
                                     };
 
                                     osmData.Relations.Add(newOsmRelation.Id, newOsmRelation);
@@ -130,8 +137,8 @@ namespace OSMtoSharp
                             {
                                 try
                                 {
-                                    string key = reader.GetAttribute("k");
-                                    string value = reader.GetAttribute("v");
+                                    string key = reader.GetAttribute(Constants.KeyString);
+                                    string value = reader.GetAttribute(Constants.ValueString);
                                     TagKeyEnum tagKey = EnumExtensions.GetTagKeyEnum<TagKeyEnum>(key);
 
                                     if (tagKey != TagKeyEnum.None)
@@ -154,7 +161,7 @@ namespace OSMtoSharp
                                 catch (Exception ex)
                                 {
 #if VERBOSE
-                                   // Console.WriteLine(ex.Message);
+                                    // Console.WriteLine(ex.Message);
 #endif
                                 }
                             }
@@ -163,7 +170,7 @@ namespace OSMtoSharp
                             {
                                 try
                                 {
-                                    long refId = long.Parse(reader.GetAttribute("ref"));
+                                    long refId = long.Parse(reader.GetAttribute(Constants.refString));
 
                                     if (currentWay != null && currentIsWay)
                                     {
@@ -173,7 +180,7 @@ namespace OSMtoSharp
                                 catch (Exception ex)
                                 {
 #if VERBOSE
-                                   // Console.WriteLine(ex.Message);
+                                    // Console.WriteLine(ex.Message);
 #endif
                                 }
 
@@ -183,17 +190,17 @@ namespace OSMtoSharp
                             {
                                 try
                                 {
-                                    string role = reader.GetAttribute("role");
+                                    string role = reader.GetAttribute(Constants.roleString);
                                     RelationMemberRoleEnum roleEnum = EnumExtensions.GetTagKeyEnum<RelationMemberRoleEnum>(role);
 
-                                    string type = reader.GetAttribute("type");
+                                    string type = reader.GetAttribute(Constants.typeString);
                                     RelationMemberTypeEnum typeEnum = EnumExtensions.GetTagKeyEnum<RelationMemberTypeEnum>(type);
 
                                     if (currentIsRelation && currentRelation != null)
                                     {
                                         currentRelation.Members.Add(new OsmMember()
                                         {
-                                            Ref = long.Parse(reader.GetAttribute("ref")),
+                                            Ref = long.Parse(reader.GetAttribute(Constants.refString)),
                                             Role = roleEnum,
                                             Type = typeEnum
                                         });
@@ -217,10 +224,10 @@ namespace OSMtoSharp
 
                                 try
                                 {
-                                    fileMinLat = double.Parse(reader.GetAttribute("minlat"), System.Globalization.CultureInfo.InvariantCulture);
-                                    fileMinLon = double.Parse(reader.GetAttribute("minlon"), System.Globalization.CultureInfo.InvariantCulture);
-                                    fileMaxLat = double.Parse(reader.GetAttribute("maxlat"), System.Globalization.CultureInfo.InvariantCulture);
-                                    fileMaxLon = double.Parse(reader.GetAttribute("maxlon"), System.Globalization.CultureInfo.InvariantCulture);
+                                    fileMinLat = double.Parse(reader.GetAttribute(Constants.MinLatString), System.Globalization.CultureInfo.InvariantCulture);
+                                    fileMinLon = double.Parse(reader.GetAttribute(Constants.MinLonString), System.Globalization.CultureInfo.InvariantCulture);
+                                    fileMaxLat = double.Parse(reader.GetAttribute(Constants.MaxLatString), System.Globalization.CultureInfo.InvariantCulture);
+                                    fileMaxLon = double.Parse(reader.GetAttribute(Constants.MaxLonString), System.Globalization.CultureInfo.InvariantCulture);
                                 }
                                 catch (Exception)
                                 {
@@ -286,6 +293,8 @@ namespace OSMtoSharp
 
             return osmData;
         }
+
+
 
     }
 }
