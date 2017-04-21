@@ -14,7 +14,10 @@ namespace OSMtoSharp
 
         private List<IUnityModel> resultList;
         private object lockResultList;
-        private HighwayTypeEnum[] types;
+
+        private HighwayTypeEnum[] highwaysTypes;
+        private BuildingsTypeEnum[] buildingsTypes;
+        private RailwayTypeEnum[] railwaysTypes;
 
         public OsmDataManager(OsmData osmData)
         {
@@ -36,7 +39,7 @@ namespace OSMtoSharp
         }
 
 
-        public IEnumerable<IUnityModel> GetHighways(params HighwayTypeEnum[] types)
+        public IEnumerable<IUnityModel> GetHighways(bool deleteData, params HighwayTypeEnum[] types)
         {
             if (preparingDataStarted)
             {
@@ -53,7 +56,7 @@ namespace OSMtoSharp
                 return resultList;
             }
 
-            this.types = types;
+            this.highwaysTypes = types;
             List<OsmWay> osmHighways = new List<OsmWay>();
 
             foreach (var way in OsmData.Ways)
@@ -61,6 +64,14 @@ namespace OSMtoSharp
                 if (way.Value.Tags.ContainsKey(TagKeyEnum.Highway))
                 {
                     osmHighways.Add(way.Value);
+                }
+            }
+
+            if (deleteData)
+            {
+                foreach (var item in osmHighways)
+                {
+                    OsmData.Ways.Remove(item.Id);
                 }
             }
 
@@ -73,30 +84,32 @@ namespace OSMtoSharp
                 {
                     foreach (var type in types)
                     {
-                        if (highwayType == HighwayTypeEnum.Proposed)
-                        {
-                            if (osmHighway.Tags.ContainsKey(TagKeyEnum.Proposed))
-                            {
-                                HighwayTypeEnum proposedType = EnumExtensions.GetTagKeyEnum<HighwayTypeEnum>(osmHighway.Tags[TagKeyEnum.Proposed]);
-                                if (proposedType == type)
-                                {
-                                    osmHighway.Tags[TagKeyEnum.Highway] = EnumExtensions.GetEnumAttributeValue(type);
-                                    osmHighwaysFulfilledParams.Add(osmHighway);
-                                    break;
-                                }
+                        //if (highwayType == HighwayTypeEnum.Proposed)
+                        //{ 
+                        //if (osmHighway.Tags.ContainsKey(TagKeyEnum.Proposed))
+                        //{
+                        //    HighwayTypeEnum proposedType = EnumExtensions.GetTagKeyEnum<HighwayTypeEnum>(osmHighway.Tags[TagKeyEnum.Proposed]);
+                        //    if (proposedType == type)
+                        //    {
+                        //        osmHighway.Tags[TagKeyEnum.Highway] = EnumExtensions.GetEnumAttributeValue(type);
+                        //        osmHighwaysFulfilledParams.Add(osmHighway);
+                        //        break;
+                        //    }
 
-                            }
-                        }
-                        else if (highwayType == type)
-                        {
-                            osmHighwaysFulfilledParams.Add(osmHighway);
-                            break;
-                        }
+                        //}
+                        //}
+                        //else if (highwayType == type)
+                        //{
+                        osmHighwaysFulfilledParams.Add(osmHighway);
+                        break;
+                        //}
 
                     }
 
                 }
             }
+
+
 
             //ThreadPoolManager threadPoolManager = new ThreadPoolManager(FillWaysNodeThreadPoolCallback);
             //threadPoolManager.Invoke(osmHighwaysFulfilledParams);
@@ -110,7 +123,7 @@ namespace OSMtoSharp
             return resultList;
         }
 
-        public IEnumerable<IUnityModel> GetBuildings()
+        public IEnumerable<IUnityModel> GetBuildings(bool deleteData, params BuildingsTypeEnum[] types)
         {
             if (preparingDataStarted)
             {
@@ -127,7 +140,7 @@ namespace OSMtoSharp
             {
                 return resultList;
             }
-
+            buildingsTypes = types;
             List<OsmWay> osmBuilding = new List<OsmWay>();
 
             foreach (var way in OsmData.Ways)
@@ -149,7 +162,7 @@ namespace OSMtoSharp
             return resultList;
         }
 
-        public IEnumerable<IUnityModel> GetRailways()
+        public IEnumerable<IUnityModel> GetRailways(bool deleteData)
         {
             if (preparingDataStarted)
             {
@@ -177,6 +190,14 @@ namespace OSMtoSharp
                 }
             }
 
+            if (deleteData)
+            {
+                foreach (var item in osmRailways)
+                {
+                    OsmData.Ways.Remove(item.Id);
+                }
+            }
+
             ThreadPoolManager threadPoolManager = new ThreadPoolManager(FillWaysNodeThreadPoolCallback);
             threadPoolManager.Invoke(osmRailways);
 
@@ -186,6 +207,89 @@ namespace OSMtoSharp
 
             preparingDataStarted = false;
             return resultList;
+        }
+
+        public IEnumerable<IUnityModel> GetPowerLines(bool deleteData)
+        {
+            if (preparingDataStarted)
+            {
+                throw new Exception("preapring data is started in other thread");
+            }
+            else
+            {
+                preparingDataStarted = true;
+            }
+
+            resultList = new List<IUnityModel>();
+
+            if (OsmData == null)
+            {
+                return resultList;
+            }
+
+            List<OsmWay> osmPowerLines = new List<OsmWay>();
+
+            foreach (var way in OsmData.Ways)
+            {
+                if (way.Value.Tags.ContainsKey(TagKeyEnum.Power))
+                {
+                    osmPowerLines.Add(way.Value);
+                }
+            }
+
+
+            if (deleteData)
+            {
+                foreach (var item in osmPowerLines)
+                {
+                    OsmData.Ways.Remove(item.Id);
+                }
+            }
+
+            ThreadPoolManager threadPoolManager = new ThreadPoolManager(FillWaysNodeThreadPoolCallback);
+            threadPoolManager.Invoke(osmPowerLines);
+
+
+            threadPoolManager = new ThreadPoolManager(PowerLinesFillResultsThreadPoolCallback);
+            threadPoolManager.Invoke(osmPowerLines);
+
+            preparingDataStarted = false;
+            return resultList;
+        }
+
+        public IEnumerable<IUnityModel> GetPowerTowers()
+        {
+            if (preparingDataStarted)
+            {
+                throw new Exception("preapring data is started in other thread");
+            }
+            else
+            {
+                preparingDataStarted = true;
+            }
+
+            resultList = new List<IUnityModel>();
+
+            if (OsmData == null)
+            {
+                return resultList;
+            }
+
+            List<IUnityModel> osmPowerTowers = new List<IUnityModel>();
+
+            foreach (var node in OsmData.Nodes)
+            {
+                if (node.Value.Tags.ContainsKey(TagKeyEnum.Power))
+                {
+                    PowerTowerTypeEnum powerType = EnumExtensions.GetTagKeyEnum<PowerTowerTypeEnum>(node.Value.Tags[TagKeyEnum.Power]);
+                    if (powerType == PowerTowerTypeEnum.Tower || powerType == PowerTowerTypeEnum.Pole)
+                    {
+                        osmPowerTowers.Add(new UnityPowerTower(node.Value));
+                    }
+
+                }
+            }
+            return osmPowerTowers;
         }
 
         private void FillWaysNodeThreadPoolCallback(object threadContext)
@@ -207,7 +311,7 @@ namespace OSMtoSharp
                 {
                     HighwayTypeEnum highwayType = EnumExtensions.GetTagKeyEnum<HighwayTypeEnum>(osmWay.Tags[TagKeyEnum.Highway]);
 
-                    foreach (var type in types)
+                    foreach (var type in highwaysTypes)
                     {
                         if (highwayType == type)
                         {
@@ -236,18 +340,25 @@ namespace OSMtoSharp
             {
                 if (osmWay.Nodes.Count > 0)
                 {
+                    BuildingsTypeEnum buildingType = EnumExtensions.GetTagKeyEnum<BuildingsTypeEnum>(osmWay.Tags[TagKeyEnum.Building]);
 
-                    UnityBuilding newUnityway = new UnityBuilding(osmWay);
-                    if (newUnityway != null)
+                    foreach (var type in buildingsTypes)
                     {
-                        lock (lockResultList)
+                        if (buildingType == type)
                         {
-                            resultList.Add(newUnityway);
+                            UnityBuilding newUnityway = new UnityBuilding(osmWay, type);
+                            if (newUnityway != null)
+                            {
+                                lock (lockResultList)
+                                {
+                                    resultList.Add(newUnityway);
+                                }
+                            }
+
+                            break;
                         }
+
                     }
-
-
-
                 }
             }
         }
@@ -276,5 +387,28 @@ namespace OSMtoSharp
             }
         }
 
+        private void PowerLinesFillResultsThreadPoolCallback(object threadContext)
+        {
+            IEnumerable<OsmWay> osmWays = threadContext as IEnumerable<OsmWay>;
+
+            foreach (var osmWay in osmWays)
+            {
+                if (osmWay.Nodes.Count > 0)
+                {
+                    PowerLineTypeEnum powerLineType = EnumExtensions.GetTagKeyEnum<PowerLineTypeEnum>(osmWay.Tags[TagKeyEnum.Power]);
+                    UnityPowerLine newUnityway = new UnityPowerLine(osmWay, powerLineType);
+                    if (newUnityway != null)
+                    {
+                        lock (lockResultList)
+                        {
+                            resultList.Add(newUnityway);
+                        }
+                    }
+
+
+
+                }
+            }
+        }
     }
 }

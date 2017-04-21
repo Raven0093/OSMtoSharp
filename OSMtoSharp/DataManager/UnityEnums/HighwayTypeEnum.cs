@@ -22,7 +22,9 @@
         [Enum("service")]
         Service,
         [Enum("proposed")]
-        Proposed
+        Proposed,
+        [Enum("Construction")]
+        Construction
 
     }
 }

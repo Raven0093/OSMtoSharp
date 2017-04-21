@@ -27,16 +27,19 @@ namespace OSMtoSharp
         [Enum("height")]
         Height,
         [Enum("building:levels")]
-        Building_levels,
+        BuildingLevels,
         [Enum("building:fireproof")]
         Building_fireproof,
-        [Enum("min_level")]
+        [Enum("minLevel")]
         Min_level,
-        [Enum("max_level")]
+        [Enum("maxLevel")]
         Max_level,
         [Enum("non_existent_levels")]
-        Non_existent_levels,
+        NonExistentLevels,
         [Enum("railway")]
         Railway,
+        [Enum("construction")]
+        Construction,
+
     }
 }

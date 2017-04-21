@@ -41,7 +41,7 @@ namespace TestApp
             //double maxLon = 18.6944300;
             //double maxLat = 50.3089200;
 
-            string fileName = "C:\\Users\\Public\\Documents\\Unity Projects\\Tests\\Files\\OutputFile.osm";
+            string fileName = "C:\\Users\\Public\\Documents\\Unity Projects\\Tests\\Files\\Gliwice.osm";
             //double minLon = -100;
             //double minLat = -100;
             //double maxLon = 100;
@@ -71,11 +71,8 @@ namespace TestApp
 
             OsmData osmData = OsmParser.GetDataFromOSM(fileName, minLon, minLat, maxLon, maxLat);
             OsmDataManager osmDataManager = new OsmDataManager(osmData);
-            osmDataManager.FillWaysNode();
-            osmData.RemoveRelationsWithoutMembers();
-            osmData.RemoveWaysWithoutNodes();
 
-
+            var result = osmDataManager.GetPowerLines(false);
 
             OsmXmlWriter.WriteOsmDataToXml(osmData, "map1.osm", 18.6762000, 50.2862500, 18.6797600, 50.2877300);
             OsmData osmData1 = OsmParser.GetDataFromOSM("map1.osm", minLon, minLat, maxLon, maxLat);

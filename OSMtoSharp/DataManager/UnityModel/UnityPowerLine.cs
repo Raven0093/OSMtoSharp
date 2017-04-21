@@ -4,21 +4,22 @@ using System.Text;
 
 namespace OSMtoSharp
 {
-    public class UnityRailway : IUnityModel
+    public class UnityPowerLine : IUnityModel
     {
-        public RailwayTypeEnum RailwayType { get; set; }
-        public List<UnityPoint> RailwayPoints { get; set; }
-        public UnityRailway(OsmWay osmWay)
-        {
-            //HighwayType = type;
+        public PowerLineTypeEnum PowerLineType { get; set; }
+        public List<UnityPoint> PowerLinePoints { get; set; }
 
-            RailwayPoints = new List<UnityPoint>();
+        public UnityPowerLine(OsmWay osmWay, PowerLineTypeEnum type)
+        {
+            PowerLineType = type;
+
+            PowerLinePoints = new List<UnityPoint>();
 
             foreach (var node in osmWay.Nodes)
             {
                 if (node != null)
                 {
-                    RailwayPoints.Add(new UnityPoint()
+                    PowerLinePoints.Add(new UnityPoint()
                     {
                         Lat = (float)node.Lat,
                         Lon = (float)node.Lon

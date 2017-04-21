@@ -37,10 +37,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataManager\UnityEnums\BuildingsTypeEnum.cs" />
+    <Compile Include="DataManager\UnityEnums\PowerLineTypeEnum.cs" />
     <Compile Include="DataManager\UnityEnums\RailwayTypeEnum.cs" />
+    <Compile Include="DataManager\UnityModel\UnityPowerTower.cs" />
     <Compile Include="DataManager\UnityModel\UnityBuilding.cs" />
     <Compile Include="DataManager\UnityModel\UnityModel.cs" />
     <Compile Include="DataManager\UnityModel\UnityPoint.cs" />
+    <Compile Include="DataManager\UnityModel\UnityPowerLine.cs" />
     <Compile Include="DataManager\UnityModel\UnityRailway.cs" />
     <Compile Include="OsmParser\Constants\Constants.cs" />
     <Compile Include="OsmParser\Enums\EnumCache.cs" />
