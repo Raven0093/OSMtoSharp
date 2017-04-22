@@ -36,8 +36,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums\Keys\Values\RelationMemberRoleEnum.cs" />
-    <Compile Include="Enums\Keys\Values\RelationMemberTypeEnum.cs" />
+    <Compile Include="Enums\Values\RelationMemberRoleEnum.cs" />
+    <Compile Include="Enums\Values\RelationMemberTypeEnum.cs" />
     <Compile Include="FileManager\Constants\Constants.cs" />
     <Compile Include="Enums\Helpers\EnumCache.cs" />
     <Compile Include="Model\Abstract\AbstractOsmNode.cs" />

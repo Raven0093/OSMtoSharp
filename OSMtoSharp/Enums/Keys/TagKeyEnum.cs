@@ -42,7 +42,11 @@ namespace OSMtoSharp.Enums.Keys
         Construction,
         [Helpers.Enum("min_height")]
         MinHeight,
-
-
+        [Helpers.Enum("landuse")]
+        Landuse,
+        [Helpers.Enum("leisure")]
+        Leisure,
+        [Helpers.Enum("amenity")]
+        Amenity,
     }
 }
