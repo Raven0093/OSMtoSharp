@@ -1,8 +1,11 @@
-﻿using System;
+﻿using OSMtoSharp.Enums;
+using OSMtoSharp.Enums.Values;
+using OSMtoSharp.Model.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.Model
 {
     public class OsmMember
     {

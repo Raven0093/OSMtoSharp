@@ -3,6 +3,8 @@ using OSMtoSharp;
 using System.Xml;
 using System.IO;
 using System.Linq;
+using OSMtoSharp.Model;
+using OSMtoSharp.FileManagers;
 
 namespace TestApp
 {
@@ -69,14 +71,14 @@ namespace TestApp
             //Console.WriteLine(DateTime.Now - data);
 
 
-            OsmData osmData = OsmParser.GetDataFromOSM(fileName, minLon, minLat, maxLon, maxLat);
-            OsmDataManager osmDataManager = new OsmDataManager(osmData);
+            OsmData osmData = OsmParser.Parse(fileName, minLon, minLat, maxLon, maxLat);
+            //OsmDataManager osmDataManager = new OsmDataManager(osmData);
 
-            var result = osmDataManager.GetPowerLines(false);
+            // var result = osmDataManager.GetPowerLines(false);
 
-            OsmXmlWriter.WriteOsmDataToXml(osmData, "map1.osm", 18.6762000, 50.2862500, 18.6797600, 50.2877300);
-            OsmData osmData1 = OsmParser.GetDataFromOSM("map1.osm", minLon, minLat, maxLon, maxLat);
-            Console.ReadLine();
+            //OsmXmlWriter.WriteOsmDataToXml(osmData, "map1.osm", 18.6762000, 50.2862500, 18.6797600, 50.2877300);
+            //OsmData osmData1 = OsmParser.GetDataFromOSM("map1.osm", minLon, minLat, maxLon, maxLat);
+            //Console.ReadLine();
         }
     }
 }

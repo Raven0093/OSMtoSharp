@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.Model
 {
     public class OsmBounds
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.Enums.Helpers
 {
     public static class EnumExtensions
     {

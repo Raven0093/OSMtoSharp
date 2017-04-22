@@ -1,10 +1,13 @@
-﻿using System;
+﻿using OSMtoSharp.Enums;
+using OSMtoSharp.Enums.Values;
+using OSMtoSharp.Model.Abstract;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Xml;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.Model
 {
     public class OsmRelation : AbstractOsmNode
     {

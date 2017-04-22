@@ -1,4 +1,6 @@
 ﻿using OSMtoSharp;
+using OSMtoSharp.FileManagers;
+using OSMtoSharp.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -165,7 +167,7 @@ namespace OsmXmlCutter
             OsmData osmData = null;
             try
             {
-                osmData = OsmParser.GetDataFromOSM(InputFileName, _minLon, _minLat, _maxLon, _maxLat);
+                osmData = OsmParser.Parse(InputFileName, _minLon, _minLat, _maxLon, _maxLat);
             }
             catch (FileNotFoundException e)
             {
@@ -174,12 +176,11 @@ namespace OsmXmlCutter
                 return;
             }
 
-            OsmDataManager osmDataManager = new OsmDataManager(osmData);
-            osmDataManager.FillWaysNode();
+            osmData.FillWaysNode();
             osmData.RemoveRelationsWithoutMembers();
             osmData.RemoveWaysWithoutNodes();
 
-            Log += $"Writing osm data to output file{Environment.NewLine}{AppDomain.CurrentDomain.BaseDirectory}{Constants.FileFolder}{Path.DirectorySeparatorChar}{OutputFileName}{ Environment.NewLine}";
+            Log += $"Writing osm data to output file{Environment.NewLine}{AppDomain.CurrentDomain.BaseDirectory}{OSMtoSharp.FileManagers.Constants.Constants.FileFolder}{Path.DirectorySeparatorChar}{OutputFileName}{ Environment.NewLine}";
             if (OsmXmlWriter.WriteOsmDataToXml(osmData, OutputFileName, _minLon, _minLat, _maxLon, _maxLat))
             {
                 Log += $"Done! { Environment.NewLine}";

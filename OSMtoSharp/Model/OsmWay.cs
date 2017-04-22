@@ -1,10 +1,11 @@
-﻿using System;
+﻿using OSMtoSharp.Model.Abstract;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Xml;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.Model
 {
     public class OsmWay : AbstractOsmNode
     {

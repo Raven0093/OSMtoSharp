@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.FileManagers.Constants
 {
     public class Constants
     {

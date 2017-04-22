@@ -1,15 +1,15 @@
-﻿using System;
+﻿using OSMtoSharp.Model.Abstract;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Xml;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.Model
 {
     public class OsmNode : AbstractOsmNode
     {
-        public double Lat { get; set; }
-        public double Lon { get; set; }
+        public Point Point { get; set; }
 
         public OsmNode() { }
     }

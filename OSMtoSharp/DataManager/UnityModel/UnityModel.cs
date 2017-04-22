@@ -1,6 +1,6 @@
-﻿namespace OSMtoSharp
-{
-    public interface IUnityModel
-    {
-    }
-}
+﻿//namespace OSMtoSharp
+//{
+//    public interface IUnityModel
+//    {
+//    }
+//}

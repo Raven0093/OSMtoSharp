@@ -1,9 +1,12 @@
-﻿using System;
+﻿using OSMtoSharp.Enums;
+using OSMtoSharp.Enums.Keys;
+using OSMtoSharp.Model.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.Model.Abstract
 {
     public abstract class AbstractOsmNode : IOsmNode
     {

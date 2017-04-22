@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.Enums.Values
 {
     public enum RelationMemberRoleEnum
     {
-        [Enum("")]
+        [Helpers.Enum("")]
         None,
-        [Enum("stop")]
+        [Helpers.Enum("stop")]
         Stop,
-        [Enum("platform")]
+        [Helpers.Enum("platform")]
         Platform
     }
 }

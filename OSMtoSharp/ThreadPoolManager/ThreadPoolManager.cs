@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.ThreadPoolManager
 {
     public delegate void CallbackDelegate(object ThreadContext);
     public class ThreadPoolManager

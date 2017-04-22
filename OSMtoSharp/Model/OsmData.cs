@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OSMtoSharp
+namespace OSMtoSharp.Model
 {
     public class OsmData
     {
@@ -29,6 +29,23 @@ namespace OSMtoSharp
                 }
                 return result;
 
+            }
+        }
+
+        public void RemoveNodesWithoutTags()
+        {
+            List<long> idsToRemove = new List<long>();
+
+            foreach (var nodeDic in Nodes)
+            {
+                if (nodeDic.Value.Tags.Count == 0)
+                {
+                    idsToRemove.Add(nodeDic.Key);
+                }
+            }
+            foreach (var idToRemove in idsToRemove)
+            {
+                Nodes.Remove(idToRemove);
             }
         }
 
@@ -70,6 +87,26 @@ namespace OSMtoSharp
             {
                 Relations.Remove(idToRemove);
             }
+        }
+
+        public void FillWaysNode()
+        {
+            FillWaysNode(WaysList);
+        }
+
+        private void FillWaysNodeThreadPoolCallback(object threadContext)
+        {
+            IEnumerable<OsmWay> osmWays = threadContext as IEnumerable<OsmWay>;
+            foreach (OsmWay osmWay in osmWays)
+            {
+                osmWay.FillNodes();
+            }
+        }
+
+        private void FillWaysNode(List<OsmWay> osmHighwaysFulfilled)
+        {
+            ThreadPoolManager.ThreadPoolManager threadPoolManager = new ThreadPoolManager.ThreadPoolManager(FillWaysNodeThreadPoolCallback);
+            threadPoolManager.Invoke(osmHighwaysFulfilled);
         }
     }
 
