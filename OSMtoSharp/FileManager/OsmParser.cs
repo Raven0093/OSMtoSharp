@@ -67,7 +67,7 @@ namespace OSMtoSharp.FileManagers
                                         osmData.Nodes.Add(newOsmNode.Id, newOsmNode);
                                         currentNode = newOsmNode;
                                         currentIsNode = true;
-                                        currentIsWay = false;
+                                        currentIsWay = false; 
                                         currentIsRelation = false;
                                     }
                                     else
