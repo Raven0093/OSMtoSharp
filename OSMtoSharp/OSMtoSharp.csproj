@@ -36,12 +36,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataManager\UnityModel\UnityPowerTower.cs" />
-    <Compile Include="DataManager\UnityModel\UnityBuilding.cs" />
-    <Compile Include="DataManager\UnityModel\UnityModel.cs" />
-    <Compile Include="DataManager\UnityModel\UnityPoint.cs" />
-    <Compile Include="DataManager\UnityModel\UnityPowerLine.cs" />
-    <Compile Include="DataManager\UnityModel\UnityRailway.cs" />
     <Compile Include="Enums\Keys\Values\RelationMemberRoleEnum.cs" />
     <Compile Include="Enums\Keys\Values\RelationMemberTypeEnum.cs" />
     <Compile Include="FileManager\Constants\Constants.cs" />
@@ -53,7 +47,6 @@
     <Compile Include="Model\OsmBounds.cs" />
     <Compile Include="Model\OsmData.cs" />
     <Compile Include="Model\OsmNode.cs" />
-    <Compile Include="DataManager\OsmDataManager.cs" />
     <Compile Include="FileManager\OsmParser.cs" />
     <Compile Include="Model\OsmRelation.cs" />
     <Compile Include="Model\OsmWay.cs" />
@@ -62,7 +55,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Enums\Keys\TagKeyEnum.cs" />
     <Compile Include="ThreadPoolManager\ThreadPoolManager.cs" />
-    <Compile Include="DataManager\UnityModel\UnityHighway.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
