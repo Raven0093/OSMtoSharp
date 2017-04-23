@@ -3734,11 +3734,5 @@ namespace OSMtoSharp.Enums.Keys
         SourceGenerator,
         [Helpers.Enum("building:fireproof")]
         Building_fireproof,
-        [Helpers.Enum("minLevel")]
-        MinLevel,
-        [Helpers.Enum("maxLevel")]
-        MaxLevel,
-        [Helpers.Enum("non_existent_levels")]
-        NonExistentLevels,
     }
 }
